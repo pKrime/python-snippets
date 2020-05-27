@@ -1,3 +1,15 @@
+bl_info = {
+    "name": "Export Curve Data",
+    "author": "Paolo Acampora",
+    "version": (1, 0),
+    "blender": (2, 80, 0),
+    "location": "Search Bar",
+    "description": "Export curve data as json",
+    "warning": "",
+    "wiki_url": "",
+    "category": "Export Curve",
+}
+
 import math
 import json
 import bpy

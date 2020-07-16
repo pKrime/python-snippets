@@ -6,7 +6,7 @@ bl_info = {
     "name": "Rigify - Make Game Friendly",
     "author": "Paolo Acampora",
     "version": (1, 0, 1),
-    "blender": (2, 8, 0),
+    "blender": (2, 80, 0),
     "location": "Armature properties",
     "description": "Brings the DEF- bones of rigify 0.5 rigs into a single, game friendly hierarchy",
     "category": "Rigging",

@@ -200,7 +200,7 @@ def gamefriendly_hierarchy(ob):
                 print("WARNING: Parent not found for {0}".format(bone_name))
                 # as a last resort, look for a DEF- bone with the same name but a lower number
                 # (i.e. try to parent DEF-tongue.002 to DEF-tongue.001)
-                if bone_name[-4] == "." and bone_name[-3:].is_digit():
+                if bone_name[-4] == "." and bone_name[-3:].isdigit():
                     bname, number = bone_name.rsplit(".")
                     number = int(number)
                     if number > 1:

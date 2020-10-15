@@ -6,7 +6,7 @@ from bpy.props import BoolProperty
 bl_info = {
     "name": "Rigify - Make Game Friendly",
     "author": "Paolo Acampora",
-    "version": (1, 0, 1),
+    "version": (1, 0, 3),
     "blender": (2, 80, 0),
     "location": "Armature Context Menu (right click, armature edit mode)",
     "description": "Brings the DEF- bones of rigify 0.5 rigs into a single, game friendly hierarchy",
@@ -185,6 +185,7 @@ def set_inherit_scale(ob, inherit_mode='FIX_SHEAR'):
 
 
 def copy_chain(ob, first, last_excluded=None, flip_bones=False):
+    """Copy a chain of bones, return name of last copied bone"""
     bone = first
 
     prev_itd_bone = None
@@ -231,10 +232,27 @@ def copy_chain(ob, first, last_excluded=None, flip_bones=False):
         if not bone.children:
             break
         bone = bone.children[0]
+    
+    return bone_name
 
 
 def flip_bone(bone):
     bone.head, bone.tail = bone.tail.copy(), bone.head.copy()
+
+
+def find_tail_root(ob, tail_start_name='DEF-tail.001'):
+    try:
+        tail_bone = get_edit_bone(ob, tail_start_name)
+    except KeyError:
+        return
+
+    if not tail_bone:
+        return
+
+    while tail_bone.parent and is_def_bone(ob, tail_bone.parent.name):
+        tail_bone = tail_bone.parent
+
+    return tail_bone.name
 
 
 def fix_tail_direction(ob):
@@ -243,14 +261,17 @@ def fix_tail_direction(ob):
     def_hips_name = get_deform_hips_name(ob, def_root_name)
 
     if def_root_name == def_hips_name:
-        return
+
+        def_root_name = find_tail_root(ob)
+        if not def_root_name:
+            print("cannot figure root/hips, not fixing, tail")
+            return def_hips_name
 
     def_root_edit = get_edit_bone(ob, def_root_name)
     def_hips_edit = get_edit_bone(ob, def_hips_name)
 
-    copy_chain(ob, def_root_edit, def_hips_edit, flip_bones=True)
-
-    def_tail_next = def_hips_edit.parent
+    tail_next_name = copy_chain(ob, def_root_edit, def_hips_edit, flip_bones=True)
+    def_tail_next = get_edit_bone(ob, tail_next_name)
     def_tail_previous = def_hips_edit
     
     def_hips_edit.parent = None
@@ -402,12 +423,17 @@ def gamefriendly_hierarchy(ob, fix_tail=True, limit_scale=False):
         ebone.parent = ebone_par
 
     if fix_tail:
-        def_root_name = fix_tail_direction(ob)
+        new_root_name = fix_tail_direction(ob)
+        if new_root_name:
+            def_root_name = new_root_name
 
     if limit_scale:
         limit_spine_scale(ob)
 
-    ob.data.edit_bones[def_root_name].parent = ob.data.edit_bones['root']
+    try:
+        ob.data.edit_bones[def_root_name].parent = ob.data.edit_bones['root']
+    except KeyError:
+        print("WARNING: DEF hierarchy root was not parented to root bone")
 
 
 class ConvertGameFriendly(bpy.types.Operator):

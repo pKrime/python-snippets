@@ -1,3 +1,30 @@
+# ====================== BEGIN GPL LICENSE BLOCK ======================
+#
+#  This program is free software; you can redistribute it and/or
+#  modify it under the terms of the GNU General Public License
+#  as published by the Free Software Foundation, version 3.
+#
+#  This program is distributed in the hope that it will be useful,
+#  but WITHOUT ANY WARRANTY; without even the implied warranty of
+#  MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+#  GNU General Public License for more details.
+#
+#  You should have received a copy of the GNU General Public License
+#  along with this program; if not, write to the Free Software Foundation,
+#  Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301, USA.
+#
+# ======================= END GPL LICENSE BLOCK ========================
+
+bl_info = {
+    "name": "Die Über Noiser",
+    "version": (0, 0, 1),
+    "author": "Paolo Acampora",
+    "blender": (2, 90, 0),
+    "description": "Adds Noise on objects/bones",
+    "category": "Object",
+}
+
+
 import bpy
 from bpy.props import FloatProperty
 from bpy.props import IntProperty
@@ -84,12 +111,33 @@ class DieUberNoiser(bpy.types.Operator):
             noise_mod.depth = self.noise_depth
 
 
+
+def menu_header(layout):
+    row = layout.row()
+    row.separator()
+
+    row = layout.row()
+    row.label(text="Uber Noiser", icon='MOD_NOISE')
+
+
+def noiser_menu(self, context):
+    layout = self.layout
+    menu_header(layout)
+
+    row = layout.row()
+    row.operator(DieUberNoiser.bl_idname)
+
+
 def register():
     bpy.utils.register_class(DieUberNoiser)
+    bpy.types.VIEW3D_MT_pose_context_menu.append(noiser_menu)
+    bpy.types.VIEW3D_MT_object_context_menu.append(noiser_menu)
 
 
 def unregister():
     bpy.utils.unregister_class(DieUberNoiser)
+    bpy.types.VIEW3D_MT_pose_context_menu.remove(noiser_menu)
+    bpy.types.VIEW3D_MT_object_context_menu.remove(noiser_menu)
 
 
 if __name__ == "__main__":

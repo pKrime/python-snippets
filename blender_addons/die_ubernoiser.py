@@ -28,6 +28,7 @@ bl_info = {
 import bpy
 from bpy.props import FloatProperty
 from bpy.props import IntProperty
+import random
 
 
 class DieUberNoiser(bpy.types.Operator):
@@ -42,6 +43,12 @@ class DieUberNoiser(bpy.types.Operator):
     noise_phase: FloatProperty(name="Phase", description="Noise Phase", default=1.0)
     noise_depth: IntProperty(name="Depth", description="Noise Depth", default=0, min=0)
 
+    random_scale: FloatProperty(name="Random Scale", description="Add Random Scale", default=0.0, min=0.0, max=1000)
+    random_strength: FloatProperty(name="Random Strength", description="Add Random Strength", default=0.0, min=0.0, max=1000)
+    random_offset: FloatProperty(name="Random Offset", description="Add Random Offset", default=0.0, min=0.0, max=1000)
+    random_phase: FloatProperty(name="Random Phase", description="Add Random Seed", default=0.0, min=0.0, max=1000)
+    random_depth: IntProperty(name="Random Depth", description="Add Random Depth", default=0, min=0, max=1000)
+
     _vars_registered_ = False
     _allowed_modes_ = ['POSE', 'OBJECT']
     _bone_names_ = []
@@ -52,6 +59,22 @@ class DieUberNoiser(bpy.types.Operator):
             return False
 
         return context.active_object is not None
+
+    def draw(self, context):
+        layout = self.layout
+        grid = layout.grid_flow(columns=2, align=True)
+
+        grid.prop(self, 'noise_scale')
+        grid.prop(self, 'noise_strength')
+        grid.prop(self, 'noise_offset')
+        grid.prop(self, 'noise_phase')
+        grid.prop(self, 'noise_depth')
+
+        grid.prop(self, 'random_scale', text="Random", slider=True)
+        grid.prop(self, 'random_strength', text="Random", slider=True)
+        grid.prop(self, 'random_offset', text="Random", slider=True)
+        grid.prop(self, 'random_phase', text="Random", slider=True)
+        grid.prop(self, 'random_depth', text="Random", slider=True)
 
     def execute(self, context):
         if context.mode == 'POSE':
@@ -100,16 +123,18 @@ class DieUberNoiser(bpy.types.Operator):
                     self.noise_scale = noise_mod.scale
                     self.noise_strength = noise_mod.strength
                     self.noise_offset = noise_mod.offset
-                    self.noise_phase = noise_mod.phase
+
+                    if self.random_phase != 0.0:
+                        self.noise_phase = noise_mod.phase
+
                     self.noise_depth = noise_mod.depth
                     self._vars_registered_ = True
 
-            noise_mod.scale = self.noise_scale
-            noise_mod.strength = self.noise_strength
-            noise_mod.offset = self.noise_offset
-            noise_mod.phase = self.noise_phase
-            noise_mod.depth = self.noise_depth
-
+            noise_mod.scale = self.noise_scale + random.uniform(-self.random_scale, self.random_scale)
+            noise_mod.strength = self.noise_strength + random.uniform(-self.random_strength, self.random_strength)
+            noise_mod.offset = self.noise_offset + random.uniform(-self.random_offset, self.random_offset)
+            noise_mod.phase = self.noise_phase + random.uniform(-self.random_phase, self.random_phase)
+            noise_mod.depth = self.noise_depth + random.choice(range(self.random_depth + 1))
 
 
 def menu_header(layout):

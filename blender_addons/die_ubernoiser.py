@@ -17,7 +17,7 @@
 
 bl_info = {
     "name": "Die Über Noiser",
-    "version": (0, 0, 1),
+    "version": (0, 0, 2),
     "author": "Paolo Acampora",
     "blender": (2, 90, 0),
     "description": "Adds Noise on objects/bones",
